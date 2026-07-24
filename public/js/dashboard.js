@@ -1,3 +1,16 @@
+// TRAVA DE SEGURANÇA: Se não estiver logado, chuta de volta para a tela inicial
+if (localStorage.getItem("usuarioLogado") !== "true") {
+  alert("⚠️ Acesso negado! Por favor, faça login primeiro.");
+  window.location.href = "/"; // Volta para a raiz (login)
+}
+
+// Atualiza o nome do usuário no topo da barra lateral dinamicamente
+const nomeSalvo = localStorage.getItem("nomeUsuario") || "Lima";
+const elementoUsuario = document.querySelector(".usuario");
+if (elementoUsuario) {
+  elementoUsuario.innerHTML = `${nomeSalvo} ▼`;
+}
+
 async function carregarDashboard() {
   try {
     const resposta = await fetch("/api/dashboard");
