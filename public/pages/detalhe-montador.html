@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detalhes do Montador</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/detalhe-solicitacao.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <!-- MENU LATERAL -->
+      <aside class="sidebar">
+        <div class="logo">🛠️ Central <span>Montagens</span></div>
+        <nav>
+          <a href="/pages/dashboard.html"> 🏠 Dashboard </a>
+          <a href="/pages/agenda.html"> 📅 Agenda </a>
+          <a href="/pages/solicitacoes.html"> 🚚 Solicitações </a>
+          <a href="/pages/montadores.html" class="active"> 👷 Montadores </a>
+          <a href="/pages/lojas.html"> 🏪 Lojas </a>
+        </nav>
+      </aside>
+
+      <!-- CONTEÚDO PRINCIPAL -->
+      <main class="content">
+        <header class="topbar">
+          <h2>Perfil do Montador</h2>
+          <a href="/pages/montadores.html" class="voltar"> ← Voltar </a>
+        </header>
+
+        <section class="painel">
+          <!-- O JavaScript vai injetar os dados reais aqui -->
+          <div id="dadosMontador">
+            <p class="info" style="color: #7f8c8d">
+              Buscando informações no Supabase...
+            </p>
+          </div>
+
+          <hr />
+
+          <h3>Alterar Status Operacional</h3>
+          <p class="info">Mude a disponibilidade do montador no sistema.</p>
+
+          <div class="acoes" style="margin-top: 15px; display: flex; gap: 10px">
+            <button class="confirmar" onclick="atualizarStatus('Disponível')">
+              🟢 Disponível
+            </button>
+            <button
+              class="salvar"
+              style="background-color: #f39c12"
+              onclick="atualizarStatus('Folga')"
+            >
+              🟡 Folga
+            </button>
+            <button
+              class="cancelar"
+              style="background-color: #e74c3c"
+              onclick="atualizarStatus('Afastado')"
+            >
+              🔴 Afastado
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- LÓGICA DO BANCO INTEGRADA E BLINDADA -->
+    <script>
+      let montadorAtual = null;
+
+      async function carregarPerfil() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const idUrl = urlParams.get("id");
+
+          if (!idUrl) {
+            alert("ID do montador não encontrado!");
+            window.location.href = "/pages/montadores.html";
+            return;
+          }
+
+          // Busca a lista atualizada do Supabase
+          const resposta = await fetch("/api/montadores");
+          if (!resposta.ok)
+            throw new Error("Erro ao buscar montadores do servidor.");
+
+          const todosMontadores = await resposta.json();
+
+          // Filtro seguro convertendo para string
+          montadorAtual = todosMontadores.find(
+            (m) => m.id.toString() === idUrl.toString(),
+          );
+
+          if (!montadorAtual) {
+            // Alerta com o ID real recebido para sabermos o que o banco respondeu
+            alert(
+              "Aviso: O ID " +
+                idUrl +
+                " não foi localizado na tabela de montadores do Supabase.",
+            );
+            window.location.href = "/pages/montadores.html";
+            return;
+          }
+
+          let classeStatus = montadorAtual.status
+            ? montadorAtual.status.toLowerCase()
+            : "disponível";
+
+          document.getElementById("dadosMontador").innerHTML = `
+                    <div class="dados">
+                        <div class="card-info"><strong>Nome completo:</strong> ${montadorAtual.nome}</div>
+                        <div class="card-info"><strong>Telefone:</strong> ${montadorAtual.telefone || "Não informado"}</div>
+                        <div class="card-info"><strong>Cidade Base:</strong> ${montadorAtual.cidade}</div>
+                        <div class="card-info">
+                            <strong>Situação Atual:</strong> 
+                            <span class="status ${classeStatus}">${montadorAtual.status || "Disponível"}</span>
+                        </div>
+                    </div>
+                `;
+        } catch (error) {
+          console.error(error);
+          document.getElementById("dadosMontador").innerHTML =
+            `<p style="color: #e74c3c;">Erro ao conectar com o banco de dados.</p>`;
+        }
+      }
+
+      async function atualizarStatus(novoStatus) {
+        if (!montadorAtual) return;
+
+        try {
+          const resposta = await fetch(
+            "/api/montadores/status/" + montadorAtual.id,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: novoStatus }),
+            },
+          );
+
+          if (!resposta.ok)
+            throw new Error("Falha ao atualizar status no servidor.");
+
+          alert(
+            "O status de " +
+              montadorAtual.nome +
+              " foi alterado para: " +
+              novoStatus,
+          );
+          carregarPerfil();
+        } catch (error) {
+          console.error(error);
+          alert("Ocorreu um erro ao tentar salvar o novo status.");
+        }
+      }
+
+      // Executa o script assim que a página abre
+      carregarPerfil();
+    </script>
+  </body>
+</html>

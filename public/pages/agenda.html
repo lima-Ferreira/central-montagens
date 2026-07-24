@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Agenda</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/agenda.css" />
+  </head>
+
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">
+          🛠️ Central
+          <span>Montagens</span>
+        </div>
+
+        <nav>
+          <a href="/pages/dashboard.html"> 🏠 Dashboard </a>
+
+          <a href="/pages/agenda.html" class="active"> 📅 Agenda </a>
+
+          <a href="/pages/solicitacoes.html"> 🚚 Solicitações </a>
+
+          <a href="/pages/montadores.html"> 👷 Montadores </a>
+
+          <a href="/pages/lojas.html"> 🏪 Lojas </a>
+
+          <a href="/pages/relatorios.html"> 📊 Relatórios </a>
+
+          <a href="/pages/configuracoes.html"> ⚙ Configurações </a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <h2>Agenda de Montagens</h2>
+
+          <div>
+            <input type="date" id="filtroData" />
+
+            <button class="btn-buscar" onclick="filtrarAgenda()">Buscar</button>
+          </div>
+        </header>
+
+        <section id="agendaLista" class="agenda-grid"></section>
+      </main>
+    </div>
+
+    <script src="/js/agenda.js"></script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+.layout {
+  display: flex;
+}
+
+.content {
+  margin-left: 250px;
+
+  width: 100%;
+
+  padding: 25px;
+}
+
+.topbar {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+}
+
+.usuario {
+  background: white;
+
+  padding: 10px 20px;
+
+  border-radius: 8px;
+}
+
+.cards {
+  display: grid;
+
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 20px;
+}
+
+.card {
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 2px 8px #ddd;
+}
+
+.card strong {
+  display: block;
+
+  font-size: 35px;
+
+  margin-top: 15px;
+}
+
+.painel {
+  margin-top: 30px;
+
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+}
+
+table {
+  width: 100%;
+
+  margin-top: 20px;
+
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 15px;
+
+  border-bottom: 1px solid #ddd;
+
+  text-align: left;
+}
+
+.status {
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+}
+
+.verde {
+  background: #dcfce7;
+
+  color: #166534;
+}
+
+.amarelo {
+  background: #fef3c7;
+
+  color: #92400e;
+}

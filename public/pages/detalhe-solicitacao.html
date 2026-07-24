@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Detalhe Solicitação</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/detalhe-solicitacao.css" />
+  </head>
+
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">
+          🛠️ Central
+          <span>Montagens</span>
+        </div>
+
+        <nav>
+          <a href="/pages/dashboard.html"> 🏠 Dashboard </a>
+
+          <a href="/pages/agenda.html"> 📅 Agenda </a>
+
+          <a href="/pages/solicitacoes.html"> 🚚 Solicitações </a>
+
+          <a href="/pages/montadores.html"> 👷 Montadores </a>
+
+          <a href="/pages/lojas.html"> 🏪 Lojas </a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <h2>Detalhe da Solicitação</h2>
+
+          <a href="/pages/solicitacoes.html" class="voltar"> ← Voltar </a>
+        </header>
+
+        <section class="painel">
+          <div id="dadosSolicitacao"></div>
+
+          <hr />
+
+          <h3>Selecionar Montadores</h3>
+
+          <p class="info">Selecione a equipe que irá realizar essa montagem.</p>
+
+          <div id="listaMontadores"></div>
+
+          <div class="acoes">
+            <button class="salvar" onclick="salvarEquipe()">
+              Salvar Equipe
+            </button>
+
+            <button class="confirmar" onclick="confirmarAgenda()">
+              Confirmar Agendamento
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/js/detalhe-solicitacao.js"></script>
+  </body>
+</html>

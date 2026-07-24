@@ -1,0 +1,49 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+
+  background: #f4f6f9;
+
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+}
+
+.layout {
+  display: flex;
+}
+
+.content {
+  margin-left: 250px;
+
+  width: calc(100% - 250px);
+
+  padding: 30px;
+}
+
+.topbar {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 25px;
+}
+
+.painel {
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}

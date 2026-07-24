@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Central de Montagens</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+  </head>
+
+  <body>
+    <div class="layout">
+      <!-- MENU LATERAL -->
+
+      <aside class="sidebar">
+        <div class="logo">
+          🛠️ Central
+          <span>Montagens</span>
+        </div>
+
+        <nav>
+          <a href="/pages/dashboard.html" class="active"> 🏠 Dashboard </a>
+
+          <a href="/pages/agenda.html"> 📅 Agenda </a>
+
+          <a href="/pages/solicitacoes.html"> 🚚 Solicitações </a>
+
+          <a href="/pages/montadores.html"> 👷 Montadores </a>
+
+          <a href="/pages/lojas.html"> 🏪 Lojas </a>
+
+          <a href="/pages/relatorios.html"> 📊 Relatórios </a>
+
+          <a href="/pages/configuracoes.html"> ⚙ Configurações </a>
+        </nav>
+      </aside>
+
+      <!-- CONTEÚDO -->
+
+      <main class="content">
+        <header class="topbar">
+          <h2>Dashboard</h2>
+          <div class="usuario">Lima ▼</div>
+        </header>
+
+        <section class="cards">
+          <div class="card">
+            <h3>Pendentes</h3>
+            <strong id="cardPendentes">0</strong>
+          </div>
+          <div class="card">
+            <h3>Hoje</h3>
+            <strong id="cardHoje">0</strong>
+          </div>
+          <div class="card">
+            <h3>Urgentes</h3>
+            <strong id="cardUrgentes">0</strong>
+          </div>
+          <div class="card">
+            <h3>Montadores Livres</h3>
+            <strong id="cardMontadores">0</strong>
+          </div>
+        </section>
+        <!-- AGENDA DO DIA -->
+        <section class="painel">
+          <h3>Agenda do Dia (Hoje)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Cidade</th>
+                <th>Equipe de Montadores</th>
+                <th>Loja</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAgendaDia">
+              <tr>
+                <td colspan="4" style="text-align: center; color: #7f8c8d">
+                  Carregando dados...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- NOVO PAINEL: PRÓXIMAS MONTAGENS -->
+        <section class="painel" style="margin-top: 30px">
+          <h3>Próximas Montagens Agendadas</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Cidade</th>
+                <th>Equipe de Montadores</th>
+                <th>Loja</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaAgendaFutura">
+              <tr>
+                <td colspan="5" style="text-align: center; color: #7f8c8d">
+                  Carregando próximos compromissos...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+  </body>
+</html>

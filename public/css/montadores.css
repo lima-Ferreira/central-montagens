@@ -1,0 +1,203 @@
+.content {
+  margin-left: 250px;
+
+  width: calc(100% - 250px);
+
+  padding: 30px;
+}
+
+.btn-novo {
+  background: #2563eb;
+
+  color: white;
+
+  border: none;
+
+  padding: 12px 20px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.painel {
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+
+  padding: 15px;
+
+  background: #f3f4f6;
+}
+
+td {
+  padding: 15px;
+
+  border-bottom: 1px solid #eee;
+}
+
+.status {
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+
+  font-weight: bold;
+}
+
+.disponível {
+  background: #dcfce7;
+
+  color: #166534;
+}
+
+.folga {
+  background: #fef3c7;
+
+  color: #92400e;
+}
+
+.afastado {
+  background: #fee2e2;
+
+  color: #991b1b;
+}
+
+/* MODAL */
+
+.modal {
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  align-items: center;
+
+  justify-content: center;
+
+  z-index: 9999;
+}
+
+.modal-box {
+  background: white;
+
+  width: 450px;
+
+  padding: 30px;
+
+  border-radius: 15px;
+}
+
+.modal-box label {
+  display: block;
+
+  font-weight: bold;
+
+  margin-bottom: 5px;
+}
+
+.modal-box input,
+.modal-box select {
+  width: 100%;
+
+  height: 42px;
+
+  margin-bottom: 18px;
+
+  padding: 10px;
+
+  border: 1px solid #ddd;
+
+  border-radius: 8px;
+}
+
+.acoes {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+}
+
+.cancelar,
+.salvar {
+  padding: 10px 20px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+}
+
+.cancelar {
+  background: #ddd;
+}
+
+.salvar {
+  background: #2563eb;
+
+  color: white;
+}
+
+/* Botão + Novo Montador no Topo */
+.btn-novo {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-novo:hover {
+  background-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px); /* Sobe de leve */
+}
+
+/* Botão Abrir dentro da Tabela */
+button.acao {
+  background-color: transparent;
+  color: #2563eb;
+  border: 1.5px solid #2563eb;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+button.acao:hover {
+  background-color: #2563eb;
+  color: white;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+/* Efeito extra: Deixa o cursor com a mãozinha ao passar em cima de qualquer botão */
+button {
+  cursor: pointer;
+}

@@ -1,0 +1,19 @@
+{
+  "name": "agenda-montagens",
+  "version": "1.0.0",
+  "description": "Sistema de Agendamento de Montagens",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "ws": "^8.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

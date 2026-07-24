@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Montadores</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/montadores.css" />
+  </head>
+
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">
+          🛠️ Central
+          <span>Montagens</span>
+        </div>
+
+        <nav>
+          <a href="/pages/dashboard.html"> 🏠 Dashboard </a>
+
+          <a href="/pages/agenda.html"> 📅 Agenda </a>
+
+          <a href="/pages/solicitacoes.html"> 🚚 Solicitações </a>
+
+          <a href="/pages/montadores.html" class="active"> 👷 Montadores </a>
+
+          <a href="/pages/lojas.html"> 🏪 Lojas </a>
+
+          <a href="/pages/relatorios.html"> 📊 Relatórios </a>
+
+          <a href="/pages/configuracoes.html"> ⚙ Configurações </a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <h2>Montadores</h2>
+
+          <button class="btn-novo" onclick="abrirModal()">
+            + Novo Montador
+          </button>
+        </header>
+
+        <section class="painel">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+
+                <th>Telefone</th>
+
+                <th>Cidade Atual</th>
+
+                <th>Status</th>
+
+                <th>Ação</th>
+              </tr>
+            </thead>
+
+            <tbody id="listaMontadores"></tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <!-- MODAL -->
+
+    <div class="modal" id="modal">
+      <div class="modal-box">
+        <h2>Novo Montador</h2>
+
+        <label> Nome </label>
+
+        <input id="nome" />
+
+        <label> Telefone </label>
+
+        <input id="telefone" />
+
+        <label> Cidade atual </label>
+
+        <select id="cidade">
+          <option>Russas</option>
+
+          <option>Palhano</option>
+
+          <option>Jaguaruana</option>
+
+          <option>Limoeiro</option>
+
+          <option>Itaiçaba</option>
+
+          <option>Aracati</option>
+        </select>
+
+        <label> Status </label>
+
+        <select id="status">
+          <option>Disponível</option>
+
+          <option>Folga</option>
+
+          <option>Afastado</option>
+        </select>
+
+        <div class="acoes">
+          <button class="cancelar" onclick="fecharModal()">Cancelar</button>
+
+          <button class="salvar" onclick="salvarMontador()">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/montadores.js"></script>
+  </body>
+</html>
