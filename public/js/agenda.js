@@ -4,11 +4,17 @@ let abaAtual = "pendentes"; // Controla qual aba está ativa por padrão
 
 async function carregarAgendaDoBanco() {
   try {
-    const resposta = await fetch("/api/agenda");
-    if (!resposta.ok)
+    // 1. Busca os vínculos de montadores normais do backend
+    const respostaAgenda = await fetch("/api/agenda");
+    // 2. Busca a tabela de solicitações direto para cruzar os dados novos
+    const respostaSolicitacoes = await fetch("/api/solicitacoes");
+
+    if (!respostaAgenda.ok || !respostaSolicitacoes.ok)
       throw new Error("Erro ao buscar os agendamentos da agenda.");
 
-    const dadosBrutos = await resposta.json();
+    const dadosBrutos = await respostaAgenda.json();
+    const listaOriginalSolicitacoes = await respostaSolicitacoes.json();
+
     const agendamentosAgrupados = {};
 
     dadosBrutos.forEach((item) => {
@@ -17,17 +23,30 @@ async function carregarAgendaDoBanco() {
       const solicitacao = item.solicitacoes;
       const montador = item.montadores;
 
+      // Cruza o ID para achar o registro completo com os campos novos salvos
+      const dadosCompletosDb =
+        listaOriginalSolicitacoes.find((s) => s.id === solicitacao.id) || {};
+
       if (!agendamentosAgrupados[solicitacao.id]) {
         agendamentosAgrupados[solicitacao.id] = {
           data: solicitacao.data_montagem,
           loja: solicitacao.loja,
           cidade: solicitacao.cidade,
           status: solicitacao.status,
-          // MAPAS DE ACORDO COM O NOVO BANCO DE DADOS:
-          numero_pedido: solicitacao.id, // Usa o próprio ID único da solicitação como número
-          solicitante: solicitacao.solicitante || "Não informado",
-          tipo_montagem: solicitacao.tipo_montagem || "Cliente",
-          observacao: solicitacao.observacao || "Sem observações.",
+          numero_pedido: solicitacao.id,
+          // Captura os dados cruzados diretamente da tabela principal de solicitações
+          solicitante:
+            dadosCompletosDb.solicitante ||
+            solicitacao.solicitante ||
+            "Não informado",
+          tipo_montagem:
+            dadosCompletosDb.tipo_montagem ||
+            solicitacao.tipo_montagem ||
+            "Cliente",
+          observacao:
+            solicitacao.observacao ||
+            solicitacao.observacoes ||
+            "Sem observações.",
           montadores: [],
         };
       }
@@ -35,8 +54,6 @@ async function carregarAgendaDoBanco() {
     });
 
     agenda = Object.values(agendamentosAgrupados);
-
-    // Renderiza os dois painéis separadamente
     renderizarCardsAgenda();
   } catch (erro) {
     console.error("Erro na agenda:", erro);
@@ -77,9 +94,17 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
   areaPendentes.innerHTML = "";
   areaConcluidas.innerHTML = "";
 
-  const listaTrabalhada = dadosFiltrados || agenda;
+  // 1. Pega os dados originais ou filtrados
+  let listaTrabalhada = dadosFiltrados || agenda;
 
-  // Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
+  // 2. ORDENAÇÃO AUTOMÁTICA DA DATA: Organiza da data mais próxima para a mais distante
+  listaTrabalhada.sort((a, b) => {
+    if (!a.data) return 1;
+    if (!b.data) return -1;
+    return a.data.localeCompare(b.data); // Compara strings no formato YYYY-MM-DD
+  });
+
+  // CORREÇÃO: Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
   const agendadas = listaTrabalhada.filter((item) => {
     const statusLimpo = (item.status || "")
       .toLowerCase()

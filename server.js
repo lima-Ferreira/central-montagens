@@ -75,23 +75,40 @@ app.post("/api/montadores", async (req, res) => {
   }
 });
 
+// Rota para atualizar o status operacional de um montador específico
+app.put("/api/montadores/status/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const { data, error } = await supabase
+      .from("montadores")
+      .update({ status: status })
+      .eq("id", parseInt(id))
+      .select();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==========================================
 // 🚚 ROTAS DA API: SOLICITAÇÕES
 // ==========================================
 
 // Buscar todas as solicitações
-// Procure por esta rota no seu server.js e mude o res.status(500) para enviar o erro real:
 app.get("/api/solicitacoes", async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from("solicitacoes") // <-- Verifique se no seu Supabase a tabela se chama exatamente 'solicitacoes'
+      .from("solicitacoes")
       .select("*")
       .order("id", { ascending: false });
 
     if (error) throw error;
     res.json(data);
   } catch (error) {
-    // ATUALIZADO: Vai mandar a mensagem real do Supabase para o console do VS Code e do navegador
     console.error("❌ ERRO NO SUPABASE:", error);
     res.status(500).json({ error: error.message || error });
   }
@@ -114,39 +131,68 @@ app.get("/api/solicitacoes/:id", async (req, res) => {
   }
 });
 
+// Cadastrar nova solicitação de loja (COM OS NOVOS CAMPOS SALVANDO)
+app.post("/api/solicitacoes", async (req, res) => {
+  try {
+    const {
+      loja,
+      cidade,
+      quantidade,
+      data_montagem,
+      prioridade,
+      observacao,
+      solicitante,
+      tipo_montagem,
+    } = req.body;
+    const { data, error } = await supabase
+      .from("solicitacoes")
+      .insert([
+        {
+          loja,
+          cidade,
+          quantidade,
+          data_montagem,
+          prioridade,
+          observacao,
+          solicitante: solicitante || "Não Informado",
+          tipo_montagem: tipo_montagem || "Cliente",
+          status: "Pendente",
+        },
+      ])
+      .select();
+
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Deletar uma solicitação do banco de dados
 app.delete("/api/solicitacoes/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
     const { error } = await supabase
       .from("solicitacoes")
       .delete()
       .eq("id", parseInt(id));
 
     if (error) throw error;
-
     res.json({ success: true, message: "Solicitação deletada com sucesso!" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 // ==========================================
-// 📊 API: DADOS DO DASHBOARD (VERSÃO CORRIGIDA)
-// ==========================================
-// ==========================================
-// 📊 API: DADOS DO DASHBOARD COM PRÓXIMOS COMPROMISSOS
+// 📊 API: DADOS DO DASHBOARD COM NOVO MAPEAMENTO
 // ==========================================
 app.get("/api/dashboard", async (req, res) => {
   try {
-    // 1. Busca solicitações
     const { data: solics, error: errS } = await supabase
       .from("solicitacoes")
       .select("status, prioridade");
     if (errS) throw errS;
 
-    // 2. Busca montadores livres
     const { data: monts, error: errM } = await supabase
       .from("montadores")
       .select("status")
@@ -162,17 +208,16 @@ app.get("/api/dashboard", async (req, res) => {
 
     const hojeStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
 
-    // 3. Busca todos os agendamentos do banco
+    // Dashboard agora solicita os campos solicitante e tipo_montagem do banco
     const { data: todosAgendamentos, error: errA } = await supabase.from(
       "agenda",
     ).select(`
         id,
-        solicitacoes ( id, loja, cidade, data_montagem, status ),
+        solicitacoes ( id, loja, cidade, data_montagem, status, solicitante, tipo_montagem ),
         montadores ( id, nome )
       `);
     if (errA) throw errA;
 
-    // Agrupamento inteligente para hoje e futuro
     const agrupadoHoje = {};
     const agrupadoFuturo = {};
 
@@ -183,25 +228,27 @@ app.get("/api/dashboard", async (req, res) => {
       const m = item.montadores;
 
       if (s.data_montagem === hojeStr) {
-        // Se for hoje
         if (!agrupadoHoje[s.id]) {
           agrupadoHoje[s.id] = {
             cidade: s.cidade,
             loja: s.loja,
             status: s.status,
             data: s.data_montagem,
+            solicitante: s.solicitante || "Não informado",
+            tipo_montagem: s.tipo_montagem || "Cliente",
             montadores: [],
           };
         }
         agrupadoHoje[s.id].montadores.push(m.nome);
       } else if (s.data_montagem > hojeStr) {
-        // Se for uma data futura
         if (!agrupadoFuturo[s.id]) {
           agrupadoFuturo[s.id] = {
             cidade: s.cidade,
             loja: s.loja,
             status: s.status,
             data: s.data_montagem,
+            solicitante: s.solicitante || "Não informado",
+            tipo_montagem: s.tipo_montagem || "Cliente",
             montadores: [],
           };
         }
@@ -209,7 +256,6 @@ app.get("/api/dashboard", async (req, res) => {
       }
     });
 
-    // Ordena os agendamentos futuros por data mais próxima
     const futuroOrdenado = Object.values(agrupadoFuturo).sort((a, b) =>
       a.data.localeCompare(b.data),
     );
@@ -230,42 +276,92 @@ app.get("/api/dashboard", async (req, res) => {
   }
 });
 
-// Cadastrar nova solicitação de loja
-app.post("/api/solicitacoes", async (req, res) => {
+// ==========================================
+// 📅 ROTAS DA API: AGENDA / ESCALAÇÕES
+// ==========================================
+
+// Buscar os agendamentos consolidados (CORRIGIDO PARA OS CARDS)
+app.get("/api/agenda", async (req, res) => {
   try {
-    const { loja, cidade, quantidade, data_montagem, prioridade, observacao } =
-      req.body;
-    const { data, error } = await supabase
-      .from("solicitacoes")
-      .insert([
-        {
-          loja,
-          cidade,
-          quantidade,
-          data_montagem,
-          prioridade,
+    const { data, error } = await supabase.from("agenda").select(`
+        id,
+        solicitacoes ( 
+          id, 
+          loja, 
+          cidade, 
+          data_montagem, 
+          status, 
           observacao,
-          status: "Pendente",
-        },
-      ])
-      .select();
+          solicitante,
+          tipo_montagem 
+        ),
+        montadores ( 
+          id, 
+          nome 
+        )
+      `);
 
     if (error) throw error;
-    res.status(201).json(data);
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// ==========================================
-// ✅ API: CONCLUIR MONTAGEM E LIBERAR EQUIPE
-// ==========================================
+// Salvar escala de equipe e confirmar agendamento
+app.post("/api/agenda/confirmar", async (req, res) => {
+  try {
+    const { solicitacao_id, montadores_ids } = req.body;
+
+    const escalacoes = montadores_ids.map((mId) => ({
+      solicitacao_id: parseInt(solicitacao_id),
+      montador_id: parseInt(mId),
+    }));
+
+    const { error: erroAgenda } = await supabase
+      .from("agenda")
+      .insert(escalacoes);
+
+    if (erroAgenda) throw erroAgenda;
+
+    const { error: erroStatus } = await supabase
+      .from("solicitacoes")
+      .update({ status: "Agendada" })
+      .eq("id", parseInt(solicitacao_id));
+
+    if (erroStatus) throw erroStatus;
+
+    res.json({ success: true, message: "Agendamento confirmado com sucesso!" });
+  } catch (error) {
+    console.error("❌ ERRO AO CONFIRMAR AGENDA:", error);
+    res.status(500).json({ error: error.message || error });
+  }
+});
+
+// Rota para buscar apenas os IDs dos montadores já escalados em uma solicitação
+app.get("/api/agenda/solicitacao/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from("agenda")
+      .select("montador_id")
+      .eq("solicitacao_id", parseInt(id));
+
+    if (error) throw error;
+
+    const ids = data.map((item) => item.montador_id);
+    res.json(ids);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Rota para concluir montagem e liberar equipe
 app.post("/api/agenda/concluir/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const solicitacaoId = parseInt(id);
 
-    // 1. Busca quais montadores estavam escalados nessa solicitação antes de finalizar
     const { data: escalados, error: errBusca } = await supabase
       .from("agenda")
       .select("montador_id")
@@ -273,7 +369,6 @@ app.post("/api/agenda/concluir/:id", async (req, res) => {
 
     if (errBusca) throw errBusca;
 
-    // 2. Atualiza o status da solicitação pai para 'Concluída'
     const { error: errStatus } = await supabase
       .from("solicitacoes")
       .update({ status: "Concluída" })
@@ -281,10 +376,8 @@ app.post("/api/agenda/concluir/:id", async (req, res) => {
 
     if (errStatus) throw errStatus;
 
-    // 3. Se houver montadores vinculados, volta o status de todos para 'Disponível'
     if (escalados && escalados.length > 0) {
       const idsMontadores = escalados.map((item) => item.montador_id);
-
       const { error: errMontadores } = await supabase
         .from("montadores")
         .update({ status: "Disponível" })
@@ -303,108 +396,12 @@ app.post("/api/agenda/concluir/:id", async (req, res) => {
   }
 });
 
-// Rota para atualizar o status operacional de um montador específico
-app.put("/api/montadores/status/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const { data, error } = await supabase
-      .from("montadores")
-      .update({ status: status })
-      .eq("id", parseInt(id))
-      .select();
-
-    if (error) throw error;
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ==========================================
-// 📅 ROTAS DA API: AGENDA / ESCALAÇÕES
-// ==========================================
-
-// Buscar os agendamentos consolidados
-app.get("/api/agenda", async (req, res) => {
-  try {
-    const { data, error } = await supabase.from("agenda").select(`
-        id,
-        solicitacoes ( id, loja, cidade, data_montagem, status ),
-        montadores ( id, nome )
-      `);
-
-    if (error) throw error;
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Salvar escala de equipe e confirmar agendamento
-// Salvar escala de equipe e confirmar agendamento (CORRIGIDO)
-app.post("/api/agenda/confirmar", async (req, res) => {
-  try {
-    const { solicitacao_id, montadores_ids } = req.body;
-
-    // 1. Vincula cada montador selecionado à solicitação na tabela 'agenda'
-    const escalacoes = montadores_ids.map((mId) => ({
-      solicitacao_id: parseInt(solicitacao_id),
-      montador_id: parseInt(mId),
-    }));
-
-    const { error: erroAgenda } = await supabase
-      .from("agenda")
-      .insert(escalacoes);
-
-    if (erroAgenda) throw erroAgenda;
-
-    // CORREÇÃO AQUI: Atualiza o status da solicitação comparando 'id' com 'solicitacao_id'
-    const { error: erroStatus } = await supabase
-      .from("solicitacoes")
-      .update({ status: "Agendada" })
-      .eq("id", parseInt(solicitacao_id)); // Mudado de 'solicitacao_id' para 'id'
-
-    if (erroStatus) throw erroStatus;
-
-    res.json({ success: true, message: "Agendamento confirmado com sucesso!" });
-  } catch (error) {
-    console.error("❌ ERRO AO CONFIRMAR AGENDA:", error);
-    res.status(500).json({ error: error.message || error });
-  }
-});
-
-// ==========================================
-// 🔄 API ADICIONAL: EDITAR / CANCELAR AGENDAMENTO
-// ==========================================
-
-// Rota para buscar apenas os IDs dos montadores já escalados em uma solicitação
-app.get("/api/agenda/solicitacao/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase
-      .from("agenda")
-      .select("montador_id")
-      .eq("solicitacao_id", parseInt(id));
-
-    if (error) throw error;
-
-    // Retorna apenas um array limpo de IDs de montadores [1, 3, 5]
-    const ids = data.map((item) => item.montador_id);
-    res.json(ids);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Rota para cancelar/limpar o agendamento completo de uma solicitação
 app.delete("/api/agenda/cancelar/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const solicitacaoId = parseInt(id);
 
-    // 1. Deleta todas as escalações daquela solicitação na tabela agenda
     const { error: erroDelete } = await supabase
       .from("agenda")
       .delete()
@@ -412,7 +409,6 @@ app.delete("/api/agenda/cancelar/:id", async (req, res) => {
 
     if (erroDelete) throw erroDelete;
 
-    // 2. Volta o status da solicitação pai para 'Pendente'
     const { error: erroStatus } = await supabase
       .from("solicitacoes")
       .update({ status: "Pendente" })
