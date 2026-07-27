@@ -165,11 +165,15 @@ function gerarHtmlCard(item) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
-  // Badge inteligente para destacar se a equipe vai atender um cliente ou arrumar o mostruário da loja
-  const badgeTipoCard =
-    item.tipo_montagem === "Mostruário"
-      ? `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🛠️ Mostruário Loja</span>`
-      : `<span style="background:#f0fdf4; color:#166534; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">👤 Cliente Final</span>`;
+  // Badge inteligente atualizada com suporte a cor vermelha para avisos de folgas/afastamentos
+  let badgeTipoCard = "";
+  if (item.tipo_montagem === "Mostruário") {
+    badgeTipoCard = `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🛠️ Mostruário Loja</span>`;
+  } else if (item.tipo_montagem === "Ausência") {
+    badgeTipoCard = `<span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">⚠️ Folga / Ausência</span>`;
+  } else {
+    badgeTipoCard = `<span style="background:#f0fdf4; color:#166534; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">👤 Cliente Final</span>`;
+  }
 
   return `
     <div class="agenda-card" style="display:flex; flex-direction:column; justify-content:space-between; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid #f1f5f9;">

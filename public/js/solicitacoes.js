@@ -169,5 +169,33 @@ window.abrirSolicitacao = function (id) {
   window.location.href = "/pages/detalhe-solicitacao.html?id=" + id;
 };
 
+// Oculta campos de quantidade e prioridade se for apenas um lançamento de folga
+window.mudouTipo = function () {
+  const tipo = document.getElementById("tipo_montagem").value;
+  const blocoCampos = document.getElementById("camposEscondiveis");
+  const labelLoja = document.getElementById("labelLoja");
+  const labelSolicitante = document.getElementById("labelSolicitante");
+
+  if (tipo === "Ausência") {
+    blocoCampos.style.display = "none";
+    labelLoja.textContent = "Unidade do Montador";
+    labelSolicitante.textContent = "Nome do Montador Ausente";
+    document.getElementById("quantidade").value = "1";
+    document.getElementById("prioridade").value = "Normal";
+  } else {
+    blocoCampos.style.display = "block";
+    labelLoja.textContent = "Loja solicitante";
+    labelSolicitante.textContent = "A pedido de (Nome do Solicitante)";
+  }
+};
+
+// Ajuste rápido para resetar a tela ao fechar o modal
+const funcaoFecharAntiga = window.fecharModal;
+window.fecharModal = function () {
+  funcaoFecharAntiga();
+  document.getElementById("tipo_montagem").value = "Cliente";
+  window.mudouTipo();
+};
+
 // Inicializa o sistema puxando a tabela atualizada do banco
 carregarSolicitacoes();

@@ -160,13 +160,27 @@ td {
 }
 
 .modal-box {
-  background: white;
+  max-height: 90vh; /* Impede que o modal passe da altura da tela do PC */
+  overflow-y: auto; /* Adiciona barra de rolagem interna se o formulário crescer */
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Deixa um espaçamento padrão e elegante entre as linhas */
+}
 
-  width: 500px;
+#camposEscondiveis {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
 
-  padding: 30px;
-
-  border-radius: 15px;
+/* Organiza os botões de ação no final da caixinha branca */
+.modal-box .acoes {
+  margin-top: 15px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
 }
 
 .modal-box h2 {
@@ -347,5 +361,104 @@ td {
     flex: 1;
     text-align: center;
     padding: 12px 20px;
+  }
+}
+
+/* ========================================================
+   🎯 RESET E CORREÇÃO DO MODAL DE SOLICITAÇÕES
+======================================================== */
+
+/* Garante que o container cinza escuro de fundo cubra a tela e comece escondido */
+.modal {
+  display: none; /* Mantém escondido por padrão */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fundo escuro transparente */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Força a caixinha branca a reaparecer centralizada e bonita */
+.modal-box {
+  background: #ffffff !important; /* Força o fundo branco */
+  width: 100%;
+  max-width: 500px; /* Largura elegante para PC */
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 90vh; /* Não deixa passar da altura da tela */
+  overflow-y: auto; /* Adiciona rolagem se faltar espaço */
+  animation: abrirModalSuave 0.2s ease-out;
+}
+
+/* Alinhamento dos inputs dentro da caixinha */
+.modal-box label {
+  font-weight: bold;
+  font-size: 13px;
+  color: #2c3e50;
+  margin-top: 5px;
+}
+
+.modal-box input,
+.modal-box select,
+.modal-box textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #fff;
+}
+
+/* Container dos campos que vão sumir na ausência */
+#camposEscondiveis {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Posiciona os botões Salvar e Cancelar lado a lado no final */
+.modal-box .acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+  width: 100%;
+}
+
+/* Força a caixa de texto a abrir maior e permite que o usuário aumente com o mouse */
+.modal-box textarea {
+  width: 100%;
+  min-height: 80px; /* Altura inicial confortável */
+  resize: vertical; /* Permite esticar apenas para baixo, mantendo o alinhamento */
+  font-family: inherit;
+}
+
+.modal-box .acoes button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+
+/* Animação para o modal surgir de forma elegante */
+@keyframes abrirModalSuave {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
