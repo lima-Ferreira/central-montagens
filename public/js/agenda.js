@@ -23,6 +23,11 @@ async function carregarAgendaDoBanco() {
           loja: solicitacao.loja,
           cidade: solicitacao.cidade,
           status: solicitacao.status,
+          // MAPAS DE ACORDO COM O NOVO BANCO DE DADOS:
+          numero_pedido: solicitacao.id, // Usa o próprio ID único da solicitação como número
+          solicitante: solicitacao.solicitante || "Não informado",
+          tipo_montagem: solicitacao.tipo_montagem || "Cliente",
+          observacao: solicitacao.observacao || "Sem observações.",
           montadores: [],
         };
       }
@@ -74,7 +79,7 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
 
   const listaTrabalhada = dadosFiltrados || agenda;
 
-  // CORREÇÃO: Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
+  // Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
   const agendadas = listaTrabalhada.filter((item) => {
     const statusLimpo = (item.status || "")
       .toLowerCase()
@@ -112,11 +117,12 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
   }
 }
 
-// CORREÇÃO DA DATA: Corrigido o bug que transformava a data em undefined
+// NOVO DESIGN DO CARD: Detalhado, organizado e focado na rota do montador
+// ATUALIZAÇÃO DA AGENDA: Visual limpo usando os novos dados estratégicos
 function gerarHtmlCard(item) {
   let equipeHtml = "";
   item.montadores.forEach((nome) => {
-    equipeHtml += `<div class="montador">👷 ${nome}</div>`;
+    equipeHtml += `<div class="montador" style="background:#f1f5f9; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; color:#334155; margin-bottom:4px; border:1px solid #e2e8f0;">👷 ${nome}</div>`;
   });
 
   let dataFormatada = "---";
@@ -127,7 +133,6 @@ function gerarHtmlCard(item) {
     dataFormatada = item.data;
   }
 
-  // Define a classe de estilo limpa para o CSS
   const statusBase = item.status || "Agendada";
   const classeStatus = statusBase
     .toLowerCase()
@@ -135,20 +140,45 @@ function gerarHtmlCard(item) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
+  // Badge inteligente para destacar se a equipe vai atender um cliente ou arrumar o mostruário da loja
+  const badgeTipoCard =
+    item.tipo_montagem === "Mostruário"
+      ? `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🛠️ Mostruário Loja</span>`
+      : `<span style="background:#f0fdf4; color:#166534; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">👤 Cliente Final</span>`;
+
   return `
-    <div class="agenda-card">
-      <h3>${item.loja}</h3>
-      <div class="cidade">📍 ${item.cidade}</div>
-      <div class="data-info">📅 <strong>Data:</strong> ${dataFormatada}</div>
-      
-      <div class="equipe">
-        <strong>Equipe Escalada</strong>
-        ${equipeHtml}
+    <div class="agenda-card" style="display:flex; flex-direction:column; justify-content:space-between; background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); border:1px solid #f1f5f9;">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3 style="margin:0; font-size:16px; font-weight:700; color:#1e293b;">${item.loja}</h3>
+          <span class="status-agendado ${classeStatus}" style="font-size:11px; font-weight:bold; padding:4px 10px; border-radius:20px;">
+            ${statusBase}
+          </span>
+        </div>
+        
+        <div class="cidade" style="font-size:13px; color:#64748b; margin-bottom:12px; font-weight:500;">📍 ${item.cidade}</div>
+        
+        <!-- Caixa Informativa Baseada na Ideia do Usuário -->
+        <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:12px; border-left:4px solid #007bff; font-size:13px;">
+          <div style="margin-bottom:6px; color:#1e293b;">📋 <strong>Tipo:</strong> ${badgeTipoCard}</div>
+          <div style="color:#475569;">👤 <strong>A pedido de:</strong> ${item.solicitante || "Não informado"}</div>
+        </div>
+
+        <div style="font-size:13px; margin-bottom:15px; color:#334155; line-height:1.4;">
+          💬 <strong>Observação:</strong> <span style="font-style:italic; color:#64748b;">"${item.observacao || "Sem observações."}"</span>
+        </div>
+        
+        <div class="data-info" style="font-size:13px; margin-bottom:15px; color:#1e293b;">
+          📅 <strong>Data da Escala:</strong> <span style="font-weight:700; color:#007bff;">${dataFormatada}</span>
+        </div>
+        
+        <div class="equipe" style="border-top:1px dashed #e2e8f0; padding-top:12px;">
+          <strong style="font-size:13px; color:#475569; display:block; margin-bottom:8px;">Equipe Escalada</strong>
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            ${equipeHtml}
+          </div>
+        </div>
       </div>
-      
-      <span class="status-agendado ${classeStatus}">
-        ${statusBase}
-      </span>
     </div>
   `;
 }

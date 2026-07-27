@@ -23,10 +23,19 @@ async function carregarSolicitacoes() {
         dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
       }
 
+      // Estilização simples para diferenciar Mostruário de Cliente na tabela
+      const badgeTipo =
+        item.tipo_montagem === "Mostruário"
+          ? `<span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; margin-left:5px;">🏪 Loja</span>`
+          : `<span style="background:#f0fdf4; color:#166534; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; margin-left:5px;">👤 Cliente</span>`;
+
       tabela.innerHTML += `
         <tr>
           <td>${item.id}</td>
-          <td>${item.loja}</td>
+          <td>
+            <div style="font-weight:bold; color:#1e293b;">${item.loja}</div>
+            <div style="font-size:12px; color:#64748b; margin-top:2px;">Por: ${item.solicitante || "Não informado"} ${badgeTipo}</div>
+          </td>
           <td>${item.cidade}</td>
           <td>${item.quantidade}</td>
           <td>${dataFormatada}</td>
@@ -41,7 +50,6 @@ async function carregarSolicitacoes() {
               <button class="acao" onclick="abrirSolicitacao(${item.id})">
                 Abrir
               </button>
-              <!-- NOVO BOTÃO: Deletar solicitação -->
               <button class="acao" style="background-color: #e74c3c;" onclick="deletarSolicitacao(${item.id})">
                 🗑️
               </button>
@@ -56,17 +64,19 @@ async function carregarSolicitacoes() {
   }
 }
 
-function abrirModal() {
+window.abrirModal = function () {
   document.getElementById("modal").style.display = "flex";
-}
+};
 
-function fecharModal() {
+window.fecharModal = function () {
   document.getElementById("modal").style.display = "none";
-}
+};
 
 // SALVAR NOVA SOLICITAÇÃO NO BANCO DE DADOS
-async function salvarSolicitacao() {
+window.salvarSolicitacao = function () {
   const loja = document.getElementById("loja").value;
+  const solicitante = document.getElementById("solicitante").value.trim();
+  const tipo_montagem = document.getElementById("tipo_montagem").value;
   const quantidade = document.getElementById("quantidade").value;
   const data_montagem = document.getElementById("data").value;
   const prioridade = document.getElementById("prioridade").value;
@@ -82,8 +92,11 @@ async function salvarSolicitacao() {
     cidade = loja.split("(")[1].replace(")", "").trim();
   }
 
+  // Objeto estruturado com as duas novas propriedades estratégicas
   const novaSolicitacao = {
     loja: loja,
+    solicitante: solicitante || "Não Informado",
+    tipo_montagem: tipo_montagem,
     cidade: cidade,
     quantidade: parseInt(quantidade),
     data_montagem: data_montagem,
@@ -91,19 +104,27 @@ async function salvarSolicitacao() {
     observacao: observacao,
   };
 
+  executarEnvio(novaSolicitacao);
+};
+
+// Separação assíncrona limpa para evitar colisões de escopo global no HTML
+async function executarEnvio(dadosEnvio) {
   try {
     const resposta = await fetch("/api/solicitacoes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(novaSolicitacao),
+      body: JSON.stringify(dadosEnvio),
     });
 
     if (!resposta.ok) {
       throw new Error("Falha ao registrar nova solicitação no banco");
     }
 
+    // Reseta o formulário limpando os novos inputs também
+    document.getElementById("solicitante").value = "";
+    document.getElementById("tipo_montagem").selectedIndex = 0;
     document.getElementById("quantidade").value = "1";
     document.getElementById("data").value = "";
     document.getElementById("observacao").value = "";
@@ -118,7 +139,7 @@ async function salvarSolicitacao() {
 }
 
 // NOVA FUNÇÃO: FAZ A EXCLUSÃO DA SOLICITAÇÃO NO BANCO
-async function deletarSolicitacao(id) {
+window.deletarSolicitacao = async function (id) {
   if (
     !confirm(
       `Tem certeza que deseja excluir a solicitação Nº ${id}? Se ela estiver agendada, a escala também será apagada.`,
@@ -137,15 +158,16 @@ async function deletarSolicitacao(id) {
     }
 
     alert(`Solicitação Nº ${id} removida com sucesso!`);
-    await carregarSolicitacoes(); // Atualiza a tabela na hora
+    await carregarSolicitacoes();
   } catch (error) {
     console.error(error);
     alert("Não foi possível excluir a solicitação.");
   }
-}
+};
 
-function abrirSolicitacao(id) {
+window.abrirSolicitacao = function (id) {
   window.location.href = "/pages/detalhe-solicitacao.html?id=" + id;
-}
+};
 
+// Inicializa o sistema puxando a tabela atualizada do banco
 carregarSolicitacoes();

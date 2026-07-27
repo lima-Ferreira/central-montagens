@@ -86,55 +86,59 @@
       </main>
     </div>
 
+    <!-- MODAL REFORMULADO COM OS NOVOS CAMPOS ESTRATÉGICOS -->
     <div class="modal" id="modal">
       <div class="modal-box">
         <h2>Nova Solicitação</h2>
 
         <label> Loja solicitante </label>
-
         <select id="loja">
           <option>Loja 01 - Matriz (Russas)</option>
-
           <option>Loja 02 - Filial 2 (Palhano)</option>
-
           <option>Loja 03 - Filial 3 (Jaguaruana)</option>
-
           <option>Loja 04 - Filial 4 (Russas)</option>
-
           <option>Loja 05 - Filial 5 (Russas)</option>
-
           <option>Loja 06 - Filial 6 (Limoeiro)</option>
-
           <option>Loja 08 - Filial 8 (Itaiçaba)</option>
-
           <option>Loja 09 - Flores 9 (Russas)</option>
-
           <option>Loja 13 - Filial 13 (Aracati)</option>
         </select>
 
-        <label> Quantidade de montadores </label>
+        <!-- NOVO CAMPO: QUEM SOLICITOU -->
+        <label> A pedido de (Nome do Solicitante) </label>
+        <input
+          type="text"
+          id="solicitante"
+          placeholder="Ex: Gerente Carlos, Vendedor Marcos..."
+        />
 
+        <!-- NOVO CAMPO: TIPO DE MONTAGEM -->
+        <label> Tipo de Montagem </label>
+        <select id="tipo_montagem">
+          <option value="Cliente">Cliente Final (Entrega de Venda)</option>
+          <option value="Mostruário">Mostruário / Exposição na Loja</option>
+        </select>
+
+        <label> Quantidade de montadores </label>
         <input type="number" id="quantidade" min="1" value="1" />
 
         <label> Data </label>
-
         <input type="date" id="data" />
 
         <label> Prioridade </label>
-
         <select id="prioridade">
           <option>Normal</option>
-
           <option>Urgente</option>
         </select>
 
-        <label> Observação </label>
-
-        <textarea id="observacao"></textarea>
+        <label> Observação complementar </label>
+        <textarea
+          id="observacao"
+          placeholder="Informações adicionais importantes..."
+        ></textarea>
 
         <div class="acoes">
           <button class="cancelar" onclick="fecharModal()">Cancelar</button>
-
           <button class="salvar" onclick="salvarSolicitacao()">Salvar</button>
         </div>
       </div>
