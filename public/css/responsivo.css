@@ -220,6 +220,20 @@
   }
 }
 
+/* TRAVA DE SEGURANÇA: Se o link possuir o filtro de equipe, oculta a navegação no mobile */
+html:has([id*="equipe"]) .sidebar,
+html:has([id*="equipe"]) nav {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  padding: 0 !important;
+}
+
+html:has([id*="equipe"]) .content {
+  margin-top: 0 !important;
+  padding-top: 15px !important;
+}
+
 /* ========================================================
    CELULARES PEQUENOS
 ======================================================== */
