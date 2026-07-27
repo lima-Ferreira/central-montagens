@@ -10,14 +10,33 @@ if (equipeFiltrada && equipeFiltrada.trim() !== "") {
 }
 
 // 2. TRAVA DE SEGURANÇA: Só chuta se o localStorage realmente estiver vazio
-if (localStorage.getItem("usuarioLogado") !== "true") {
-  // Pequeno delay para garantir que não é um falso negativo de carregamento
-  setTimeout(() => {
-    if (localStorage.getItem("usuarioLogado") !== "true") {
-      alert("⚠️ Acesso negado! Por favor, faça login primeiro.");
-      window.location.href = "/";
+// BOTÃO DE COMPARTILHAR A AGENDA GERAL FIXO (Sempre visível para o Administrador)
+if (localStorage.getItem("nivelAcesso") !== "montador") {
+  // Aguarda a página carregar para inserir o botão na barra de topo
+  document.addEventListener("DOMContentLoaded", () => {
+    const topbar = document.querySelector(".topbar");
+    // Verifica se o botão já não existe na tela para não duplicar
+    if (topbar && !document.getElementById("btnCompartilharGeral")) {
+      const btnGeral = document.createElement("button");
+      btnGeral.id = "btnCompartilharGeral";
+      btnGeral.innerHTML = "📢 Compartilhar Agenda no Grupo";
+      btnGeral.style.cssText =
+        "background:#007bff; color:white; padding:10px 15px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; margin-top:10px; transition: 0.2s;";
+
+      btnGeral.onclick = function () {
+        // APONTA DIRETO PARA A PÁGINA DE AGENDA (agenda.html)
+        const linkAgendaGeral = window.location.origin + "/pages/agenda.html";
+        const textoMsg =
+          "🛠️ *Central de Montagens - Escala Completa*\nConfira o painel com todos os agendamentos atualizados aqui:\n" +
+          linkAgendaGeral;
+
+        const urlFinal = new URL("https://wa.me");
+        urlFinal.searchParams.set("text", textoMsg);
+        window.open(urlFinal.toString(), "_blank");
+      };
+      topbar.appendChild(btnGeral);
     }
-  }, 100);
+  });
 }
 
 // Função executada assim que o HTML estiver totalmente pronto na tela
