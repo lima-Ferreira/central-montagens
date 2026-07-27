@@ -1,22 +1,17 @@
 // O array de agendamentos começa vazio e buscará os dados reais do Supabase
 let agenda = [];
+let abaAtual = "pendentes"; // Controla qual aba está ativa por padrão
 
 async function carregarAgendaDoBanco() {
   try {
     const resposta = await fetch("/api/agenda");
-
-    if (!resposta.ok) {
+    if (!resposta.ok)
       throw new Error("Erro ao buscar os agendamentos da agenda.");
-    }
 
-    // Recebe os dados brutos de junção das tabelas do servidor
     const dadosBrutos = await resposta.json();
-
-    // Organiza os dados para agrupar montadores que pertencem à mesma solicitação de loja
     const agendamentosAgrupados = {};
 
     dadosBrutos.forEach((item) => {
-      // Garante que o item possui os vínculos de solicitações e montadores antes de processar
       if (!item.solicitacoes || !item.montadores) return;
 
       const solicitacao = item.solicitacoes;
@@ -31,81 +26,142 @@ async function carregarAgendaDoBanco() {
           montadores: [],
         };
       }
-
       agendamentosAgrupados[solicitacao.id].montadores.push(montador.nome);
     });
 
-    // Transforma o objeto agrupado de volta em um array limpo
     agenda = Object.values(agendamentosAgrupados);
 
-    // Renderiza na tela
-    renderizarCardsAgenda(agenda);
+    // Renderiza os dois painéis separadamente
+    renderizarCardsAgenda();
   } catch (erro) {
     console.error("Erro na agenda:", erro);
     alert("Não foi possível carregar os agendamentos reais.");
   }
 }
 
-function renderizarCardsAgenda(lista) {
-  let area = document.getElementById("agendaLista");
-  area.innerHTML = "";
+// Função para alternar a exibição entre Pendentes e Concluídas
+window.alternarAbas = function (aba) {
+  abaAtual = aba;
+  const btnPendentes = document.getElementById("abaPendentes");
+  const btnConcluidas = document.getElementById("abaConcluidas");
+  const listaPendentes = document.getElementById("agendaLista");
+  const listaConcluidas = document.getElementById("agendaConcluidasLista");
 
-  if (lista.length === 0) {
-    area.innerHTML = `<p class="info" style="grid-column: 1/-1; text-align: center; color: #7f8c8d; margin-top: 20px;">Nenhum agendamento confirmado para o período.</p>`;
-    return;
+  if (aba === "pendentes") {
+    btnPendentes.style.backgroundColor = "#007bff";
+    btnPendentes.style.color = "white";
+    btnConcluidas.style.backgroundColor = "#e2e8f0";
+    btnConcluidas.style.color = "#4a5568";
+    listaPendentes.style.display = "grid";
+    listaConcluidas.style.display = "none";
+  } else {
+    btnConcluidas.style.backgroundColor = "#166534"; // Verde escuro para o histórico
+    btnConcluidas.style.color = "white";
+    btnPendentes.style.backgroundColor = "#e2e8f0";
+    btnPendentes.style.color = "#4a5568";
+    listaPendentes.style.display = "none";
+    listaConcluidas.style.display = "grid";
+  }
+  renderizarCardsAgenda();
+};
+
+function renderizarCardsAgenda(dadosFiltrados = null) {
+  let areaPendentes = document.getElementById("agendaLista");
+  let areaConcluidas = document.getElementById("agendaConcluidasLista");
+
+  areaPendentes.innerHTML = "";
+  areaConcluidas.innerHTML = "";
+
+  const listaTrabalhada = dadosFiltrados || agenda;
+
+  // CORREÇÃO: Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
+  const agendadas = listaTrabalhada.filter((item) => {
+    const statusLimpo = (item.status || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+    return statusLimpo !== "conclui-da" && statusLimpo !== "concluida";
+  });
+
+  const concluidas = listaTrabalhada.filter((item) => {
+    const statusLimpo = (item.status || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+    return statusLimpo === "conclui-da" || statusLimpo === "concluida";
+  });
+
+  // 1. RENDERIZA PENDENTES/AGENDADAS
+  if (agendadas.length === 0) {
+    areaPendentes.innerHTML = `<p class="info" style="grid-column: 1/-1; text-align: center; color: #7f8c8d; margin-top: 20px;">Nenhum agendamento ativo pendente.</p>`;
+  } else {
+    agendadas.forEach(
+      (item) => (areaPendentes.innerHTML += gerarHtmlCard(item)),
+    );
   }
 
-  lista.forEach((item) => {
-    let equipeHtml = "";
-
-    item.montadores.forEach((nome) => {
-      // CORREÇÃO: Removeu a palavra fixa "Worker" e manteve apenas o emoji estruturado
-      equipeHtml += `
-        <div class="montador">
-          👷 ${nome}
-        </div>
-      `;
-    });
-
-    let dataFormatada = "---";
-    if (item.data) {
-      const partes = item.data.split("-");
-      dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
-    }
-
-    let classeStatus = item.status ? item.status.toLowerCase() : "agendada";
-
-    area.innerHTML += `
-      <div class="agenda-card">
-        <h3>${item.loja}</h3>
-        <div class="cidade">📍 ${item.cidade}</div>
-        <div class="data-info">📅 <strong>Data:</strong> ${dataFormatada}</div>
-        
-        <div class="equipe">
-          <strong>Equipe Escalada</strong>
-          ${equipeHtml}
-        </div>
-        
-        <span class="status-agendado ${classeStatus}">
-          ${item.status || "Agendada"}
-        </span>
-      </div>
-    `;
-  });
+  // 2. RENDERIZA CONCLUÍDAS
+  if (concluidas.length === 0) {
+    areaConcluidas.innerHTML = `<p class="info" style="grid-column: 1/-1; text-align: center; color: #7f8c8d; margin-top: 20px;">Nenhum histórico de montagem concluída encontrado.</p>`;
+  } else {
+    concluidas.forEach(
+      (item) => (areaConcluidas.innerHTML += gerarHtmlCard(item)),
+    );
+  }
 }
 
-function filtrarAgenda() {
-  let dataFiltro = document.getElementById("filtroData").value; // Retorna YYYY-MM-DD
+// CORREÇÃO DA DATA: Corrigido o bug que transformava a data em undefined
+function gerarHtmlCard(item) {
+  let equipeHtml = "";
+  item.montadores.forEach((nome) => {
+    equipeHtml += `<div class="montador">👷 ${nome}</div>`;
+  });
 
-  if (!dataFiltro) {
-    renderizarCardsAgenda(agenda);
-    return;
+  let dataFormatada = "---";
+  if (item.data && item.data.includes("-")) {
+    const partes = item.data.split("-");
+    dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+  } else if (item.data) {
+    dataFormatada = item.data;
   }
 
-  // Filtra comparando as strings de data no formato YYYY-MM-DD
+  // Define a classe de estilo limpa para o CSS
+  const statusBase = item.status || "Agendada";
+  const classeStatus = statusBase
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+  return `
+    <div class="agenda-card">
+      <h3>${item.loja}</h3>
+      <div class="cidade">📍 ${item.cidade}</div>
+      <div class="data-info">📅 <strong>Data:</strong> ${dataFormatada}</div>
+      
+      <div class="equipe">
+        <strong>Equipe Escalada</strong>
+        ${equipeHtml}
+      </div>
+      
+      <span class="status-agendado ${classeStatus}">
+        ${statusBase}
+      </span>
+    </div>
+  `;
+}
+
+window.filtrarAgenda = function () {
+  let dataFiltro = document.getElementById("filtroData").value;
+  if (!dataFiltro) {
+    renderizarCardsAgenda();
+    return;
+  }
   let resultado = agenda.filter((item) => item.data === dataFiltro);
   renderizarCardsAgenda(resultado);
-}
+};
 
 // Inicializa a tela buscando os agendamentos reais do Supabase
 carregarAgendaDoBanco();

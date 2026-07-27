@@ -201,3 +201,77 @@ button.acao:hover {
 button {
   cursor: pointer;
 }
+
+/* ==========================================
+   📱 CONFIGURAÇÕES PARA CELULAR (ATÉ 768px)
+   ========================================== */
+@media (max-width: 768px) {
+  /* 1. Ajusta o espaço do conteúdo para ocupar a largura total */
+  .content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+
+  /* 2. Organiza o topo empilhando o título e o botão de cadastro */
+  .topbar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .btn-novo {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px; /* Aumenta um pouco a área de toque no celular */
+  }
+
+  /* 3. Protege a tabela criando uma rolagem horizontal no painel */
+  .painel {
+    padding: 15px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px; /* Impede os dados da tabela de se esmagarem */
+  }
+
+  th,
+  td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  /* 4. Ajusta o tamanho do Modal Box para telas mobile */
+  .modal-box {
+    width: 90%; /* Deixa uma margem segura nas laterais da tela */
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  /* Melhora o tamanho das fontes dos inputs para evitar o zoom do iOS */
+  .modal-box input,
+  .modal-box select {
+    font-size: 16px;
+    height: 45px; /* Deixa o campo ligeiramente maior e mais fácil de tocar */
+  }
+
+  /* Reorganiza os botões de ação do formulário lado a lado */
+  .acoes {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .cancelar,
+  .salvar {
+    flex: 1; /* Faz os dois botões dividirem o espaço igualmente */
+    text-align: center;
+    padding: 12px 20px;
+  }
+}

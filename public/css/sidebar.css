@@ -46,3 +46,44 @@
 
   color: white;
 }
+
+/* --- CONFIGURAÇÕES PARA CELULAR (TELAS ATÉ 768px) --- */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative; /* Libera o conteúdo para descer livremente */
+    background: #1f2937;
+  }
+
+  .logo {
+    padding: 15px 20px;
+    font-size: 18px;
+    text-align: center; /* Centraliza a logo no topo */
+  }
+
+  .logo span {
+    display: inline; /* Coloca o "Montagens" ao lado do "Central" em vez de embaixo */
+    margin-left: 5px;
+    font-size: 14px;
+  }
+
+  .sidebar nav {
+    margin-top: 0;
+    display: flex; /* Alinha os links lado a lado */
+    overflow-x: auto; /* Cria a rolagem horizontal se os links passarem da tela */
+    white-space: nowrap; /* Impede os links de quebrarem linha */
+    scrollbar-width: none; /* Garante que a barra de rolagem fique oculta no Firefox */
+  }
+
+  /* Oculta a barra de rolagem no Chrome/Safari para o visual ficar mais limpo */
+  .sidebar nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar nav a {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}

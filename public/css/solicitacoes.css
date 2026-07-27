@@ -233,3 +233,119 @@ td {
 
   color: white;
 }
+
+/* ==========================================
+   📱 CONFIGURAÇÕES PARA CELULAR (ATÉ 768px)
+   ========================================== */
+@media (max-width: 768px) {
+  /* 1. Ajusta o espaço do conteúdo para ocupar a tela inteira */
+  .content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+
+  /* 2. Organiza o topo empilhando o título e o botão */
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .topbar h2 {
+    font-size: 22px; /* Reduz levemente para não quebrar linha */
+  }
+
+  .btn-nova {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px;
+  }
+
+  /* 3. Barra de botões de filtros com rolagem horizontal por toque */
+  .filtros {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 2px; /* Ajusta a proximidade dos botões */
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    scrollbar-width: none; /* Oculta a barra no Firefox */
+    -webkit-overflow-scrolling: touch; /* Rolagem macia no iPhone */
+  }
+
+  /* Oculta a barra de rolagem visual no Chrome, Safari e Edge */
+  .filtros::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filtro {
+    margin-right: 0; /* Passa o controle de espaçamento para o gap do container */
+    flex-shrink: 0; /* Impede que o texto dentro do botão seja amassado */
+    padding: 8px 16px;
+    font-size: 13.5px;
+  }
+
+  /* 4. Protege a tabela interna criando uma área de rolagem no painel */
+  .painel {
+    padding: 15px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Como esta tabela tem 8 colunas, precisa de um espaço seguro para renderizar */
+  table {
+    min-width: 780px;
+  }
+
+  th,
+  td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  /* 5. Ajustes para o Modal de Nova Solicitação */
+  .modal-box {
+    width: 92%;
+    padding: 20px;
+    box-sizing: border-box;
+    max-height: 85vh; /* Impede o modal de transbordar em telas baixinhas */
+    overflow-y: auto; /* Caso falte tela, cria uma rolagem só dentro do modal */
+  }
+
+  .modal-box h2 {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+
+  /* Altera a fonte para 16px para desativar o zoom automático dos inputs mobile */
+  .modal-box input,
+  .modal-box select,
+  .modal-box textarea {
+    font-size: 16px;
+    height: 45px;
+    margin-bottom: 15px;
+  }
+
+  .modal-box textarea {
+    height: 80px; /* Altura confortável para digitar a observação */
+  }
+
+  /* Reorganiza os botões de Ação para preencherem o rodapé lado a lado */
+  .acoes {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  .cancelar,
+  .salvar {
+    flex: 1;
+    text-align: center;
+    padding: 12px 20px;
+  }
+}

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/sidebar.css" />
     <link rel="stylesheet" href="/css/agenda.css" />
+    <link rel="stylesheet" href="/css/responsivo.css" />
   </head>
 
   <body>
@@ -35,22 +36,72 @@
           <a href="/pages/configuracoes.html"> ⚙ Configurações </a>
         </nav>
       </aside>
-
       <main class="content">
         <header class="topbar">
           <h2>Agenda de Montagens</h2>
 
           <div>
             <input type="date" id="filtroData" />
-
             <button class="btn-buscar" onclick="filtrarAgenda()">Buscar</button>
           </div>
         </header>
 
+        <!-- SELETOR DE ABAS ADICIONADO AQUI -->
+        <div
+          class="abas-agenda"
+          style="
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+          "
+        >
+          <button
+            id="abaPendentes"
+            onclick="alternarAbas('pendentes')"
+            style="
+              background: #007bff;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: bold;
+            "
+          >
+            📅 Próximas Montagens
+          </button>
+          <button
+            id="abaConcluidas"
+            onclick="alternarAbas('concluidas')"
+            style="
+              background: #e2e8f0;
+              color: #4a5568;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: bold;
+            "
+          >
+            ✅ Concluídas (Histórico)
+          </button>
+        </div>
+
+        <!-- LISTA PRINCIPAL (AGENDADAS) -->
         <section id="agendaLista" class="agenda-grid"></section>
+
+        <!-- LISTA SECUNDÁRIA (CONCLUÍDAS - INICIALMENTE ESCONDIDA) -->
+        <section
+          id="agendaConcluidasLista"
+          class="agenda-grid"
+          style="display: none"
+        ></section>
       </main>
     </div>
 
-    <script src="/js/agenda.js"></script>
+    <!-- O "?v=2" engana o navegador, forçando-o a baixar a versão nova na hora -->
+    <script src="/js/agenda.js?v=2"></script>
   </body>
 </html>

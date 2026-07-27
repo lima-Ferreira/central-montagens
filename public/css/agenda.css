@@ -202,3 +202,62 @@ input[type="date"]:focus {
   background-color: #d1fae5 !important;
   color: #065f46 !important;
 }
+
+/* ==========================================
+   📱 CONFIGURAÇÕES PARA CELULAR (ATÉ 768px)
+   ========================================== */
+@media (max-width: 768px) {
+  /* 1. Remove o recuo do menu lateral e expande para a tela cheia */
+  .content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+
+  /* 2. Organiza o topo empilhando o título e os filtros */
+  .topbar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  /* Faz a barra que contém a data e o botão ocupar toda a largura */
+  .topbar div {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+  }
+
+  /* Força a data e o botão a dividirem o espaço disponível igualmente */
+  input[type="date"],
+  .btn-buscar {
+    flex: 1;
+    width: 100%;
+    text-align: center;
+    padding: 12px; /* Melhora a área de toque no celular */
+  }
+
+  /* 3. Reduz o espaçamento do grid da lista para telas menores */
+  #agendaLista {
+    grid-template-columns: 1fr; /* Força 1 card por linha se a tela for muito pequena */
+    gap: 15px;
+    padding: 10px 0;
+  }
+
+  /* 4. Ajustes nos detalhes internos do card */
+  .agenda-card {
+    padding: 16px; /* Menos padding interno para sobrar espaço */
+  }
+
+  /* Desloca sutilmente a tag de status para não cobrir o título no mobile */
+  .status-agendado {
+    position: relative;
+    top: 0;
+    right: 0;
+    align-self: flex-start;
+    margin-bottom: 12px;
+    display: inline-block;
+  }
+}
