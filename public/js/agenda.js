@@ -1,21 +1,65 @@
-// O array de agendamentos começa vazio e buscará os dados reais do Supabase
+// 1. CAPTURA DE FILTROS DA URL DE FORMA BLINDADA
+const urlParams = new URLSearchParams(window.location.search);
+const equipeFiltrada = urlParams.get("equipe"); // Pega o nome do montador do link do WhatsApp
+
+// SE O LINK VIER DO WHATSAPP, LOGA O MONTADOR AUTOMATICAMENTE
+if (equipeFiltrada && equipeFiltrada.trim() !== "") {
+  localStorage.setItem("usuarioLogado", "true");
+  localStorage.setItem("nomeUsuario", equipeFiltrada.replace(/_/g, " "));
+  localStorage.setItem("nivelAcesso", "montador");
+}
+
+// TRAVA DE SEGURANÇA PADRÃO: Só barra se não estiver logado de nenhuma forma
+if (localStorage.getItem("usuarioLogado") !== "true") {
+  setTimeout(() => {
+    if (localStorage.getItem("usuarioLogado") !== "true") {
+      alert("⚠️ Acesso negado! Por favor, faça login primeiro.");
+      window.location.href = "/";
+    }
+  }, 100);
+}
+
+// EXECUTA ASSIM QUE O HTML DA AGENDA ESTIVER PRONTO NA TELA
+document.addEventListener("DOMContentLoaded", () => {
+  const nivelAcessoAtual = localStorage.getItem("nivelAcesso");
+
+  // SE FOR ACESSO DE MONTADOR, METE O BLOQUEIO GERAL DE NAVEGAÇÃO
+  if (nivelAcessoAtual === "montador") {
+    // 1. Esconde a sidebar (Menu Lateral) completamente
+    const sidebar = document.querySelector(".sidebar");
+    if (sidebar) sidebar.style.setProperty("display", "none", "important");
+
+    // 2. Oculta os botões de abas e filtros de data (Evita que o montador mexa na busca)
+    const secaoFiltrosTop = document.querySelector(".topbar div");
+    if (secaoFiltrosTop) secaoFiltrosTop.style.display = "none";
+
+    const secaoAbas = document.querySelector(".abas-agenda");
+    if (secaoAbas) secaoAbas.style.display = "none";
+
+    // 3. Estica o conteúdo dos cards para ocupar a tela inteira do celular de forma limpa
+    const content = document.querySelector(".content");
+    if (content) {
+      content.style.marginLeft = "0";
+      content.style.width = "100%";
+      content.style.padding = "15px";
+    }
+  }
+});
+
 let agenda = [];
-let abaAtual = "pendentes"; // Controla qual aba está ativa por padrão
+let abaAtual = "pendentes";
 
 async function carregarAgendaDoBanco() {
   try {
-    // 1. Busca os vínculos de montadores normais do backend
-    const respostaAgenda = await fetch("/api/agenda");
-    // 2. Busca a tabela de solicitações direto para cruzar os dados novos
-    const respostaSolicitacoes = await fetch("/api/solicitacoes");
-
-    if (!respostaAgenda.ok || !respostaSolicitacoes.ok)
+    const resposta = await fetch("/api/agenda");
+    if (!resposta.ok)
       throw new Error("Erro ao buscar os agendamentos da agenda.");
 
-    const dadosBrutos = await respostaAgenda.json();
-    const listaOriginalSolicitacoes = await respostaSolicitacoes.json();
-
+    const dadosBrutos = await resposta.json();
     const agendamentosAgrupados = {};
+    const nomeFiltroNorm = equipeFiltrada
+      ? equipeFiltrada.replace(/_/g, " ").trim().toLowerCase()
+      : null;
 
     dadosBrutos.forEach((item) => {
       if (!item.solicitacoes || !item.montadores) return;
@@ -23,9 +67,15 @@ async function carregarAgendaDoBanco() {
       const solicitacao = item.solicitacoes;
       const montador = item.montadores;
 
-      // Cruza o ID para achar o registro completo com os campos novos salvos
-      const dadosCompletosDb =
-        listaOriginalSolicitacoes.find((s) => s.id === solicitacao.id) || {};
+      // FILTRAGEM INTELIGENTE DIRETA NO LAÇO: Se for montador, ignora as rotas dos outros colegas
+      if (nomeFiltroNorm) {
+        const pertenceAEquipe =
+          (solicitacao.solicitante &&
+            solicitacao.solicitante.toLowerCase().includes(nomeFiltroNorm)) ||
+          (montador.nome &&
+            montador.nome.toLowerCase().includes(nomeFiltroNorm));
+        if (!pertenceAEquipe) return; // Pula essa linha se for de outro montador
+      }
 
       if (!agendamentosAgrupados[solicitacao.id]) {
         agendamentosAgrupados[solicitacao.id] = {
@@ -34,19 +84,9 @@ async function carregarAgendaDoBanco() {
           cidade: solicitacao.cidade,
           status: solicitacao.status,
           numero_pedido: solicitacao.id,
-          // Captura os dados cruzados diretamente da tabela principal de solicitações
-          solicitante:
-            dadosCompletosDb.solicitante ||
-            solicitacao.solicitante ||
-            "Não informado",
-          tipo_montagem:
-            dadosCompletosDb.tipo_montagem ||
-            solicitacao.tipo_montagem ||
-            "Cliente",
-          observacao:
-            solicitacao.observacao ||
-            solicitacao.observacoes ||
-            "Sem observações.",
+          solicitante: solicitacao.solicitante || "Não informado",
+          tipo_montagem: solicitacao.tipo_montagem || "Cliente",
+          observacao: solicitacao.observacao || "Sem observações.",
           montadores: [],
         };
       }
@@ -60,7 +100,6 @@ async function carregarAgendaDoBanco() {
     alert("Não foi possível carregar os agendamentos reais.");
   }
 }
-
 // Função para alternar a exibição entre Pendentes e Concluídas
 window.alternarAbas = function (aba) {
   abaAtual = aba;
@@ -94,17 +133,16 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
   areaPendentes.innerHTML = "";
   areaConcluidas.innerHTML = "";
 
-  // 1. Pega os dados originais ou filtrados
-  let listaTrabalhada = dadosFiltrados || agenda;
+  const listaTrabalhada = dadosFiltrados || agenda;
 
-  // 2. ORDENAÇÃO AUTOMÁTICA DA DATA: Organiza da data mais próxima para a mais distante
+  // ORDENAÇÃO AUTOMÁTICA DA DATA: Organiza da data mais próxima para a mais distante
   listaTrabalhada.sort((a, b) => {
     if (!a.data) return 1;
     if (!b.data) return -1;
     return a.data.localeCompare(b.data); // Compara strings no formato YYYY-MM-DD
   });
 
-  // CORREÇÃO: Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
+  // Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
   const agendadas = listaTrabalhada.filter((item) => {
     const statusLimpo = (item.status || "")
       .toLowerCase()
@@ -142,8 +180,7 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
   }
 }
 
-// NOVO DESIGN DO CARD: Detalhado, organizado e focado na rota do montador
-// ATUALIZAÇÃO DA AGENDA: Visual limpo usando os novos dados estratégicos
+// NOVO DESIGN DO CARD COMPLETO
 function gerarHtmlCard(item) {
   let equipeHtml = "";
   item.montadores.forEach((nome) => {
@@ -165,7 +202,7 @@ function gerarHtmlCard(item) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
-  // Badge inteligente atualizada com suporte a cor vermelha para avisos de folgas/afastamentos
+  // Badge inteligente atualizada com suporte a cores para folgas/afastamentos e clientes
   let badgeTipoCard = "";
   if (item.tipo_montagem === "Mostruário") {
     badgeTipoCard = `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🛠️ Mostruário Loja</span>`;

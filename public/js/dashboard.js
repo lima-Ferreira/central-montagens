@@ -24,8 +24,13 @@ if (localStorage.getItem("nivelAcesso") !== "montador") {
         "background:#007bff; color:white; padding:10px 15px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:14px; margin-top:10px; transition: 0.2s;";
 
       btnGeral.onclick = function () {
-        // APONTA DIRETO PARA A PÁGINA DE AGENDA (agenda.html)
-        const linkAgendaGeral = window.location.origin + "/pages/agenda.html";
+        // Pega o nome do usuário logado (ou usa Geral se for o admin)
+        const nomeUsuario = localStorage.getItem("nomeUsuario") || "Geral";
+        const equipeUrl = encodeURIComponent(nomeUsuario.replace(/ /g, "_"));
+
+        // Envia o link da agenda carregando a sessão do montador
+        const linkAgendaGeral =
+          window.location.origin + "/pages/agenda.html?equipe=" + equipeUrl;
         const textoMsg =
           "🛠️ *Central de Montagens - Escala Completa*\nConfira o painel com todos os agendamentos atualizados aqui:\n" +
           linkAgendaGeral;
@@ -34,6 +39,7 @@ if (localStorage.getItem("nivelAcesso") !== "montador") {
         urlFinal.searchParams.set("text", textoMsg);
         window.open(urlFinal.toString(), "_blank");
       };
+
       topbar.appendChild(btnGeral);
     }
   });
