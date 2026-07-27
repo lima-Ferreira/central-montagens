@@ -1,53 +1,6 @@
-// 1. CAPTURA DE FILTROS DA URL DE FORMA BLINDADA
-const urlParams = new URLSearchParams(window.location.search);
-const equipeFiltrada = urlParams.get("equipe"); // Pega o nome do montador do link do WhatsApp
-
-// SE O LINK VIER DO WHATSAPP, LOGA O MONTADOR AUTOMATICAMENTE
-if (equipeFiltrada && equipeFiltrada.trim() !== "") {
-  localStorage.setItem("usuarioLogado", "true");
-  localStorage.setItem("nomeUsuario", equipeFiltrada.replace(/_/g, " "));
-  localStorage.setItem("nivelAcesso", "montador");
-}
-
-// TRAVA DE SEGURANÇA PADRÃO: Só barra se não estiver logado de nenhuma forma
-if (localStorage.getItem("usuarioLogado") !== "true") {
-  setTimeout(() => {
-    if (localStorage.getItem("usuarioLogado") !== "true") {
-      alert("⚠️ Acesso negado! Por favor, faça login primeiro.");
-      window.location.href = "/";
-    }
-  }, 100);
-}
-
-// EXECUTA ASSIM QUE O HTML DA AGENDA ESTIVER PRONTO NA TELA
-document.addEventListener("DOMContentLoaded", () => {
-  const nivelAcessoAtual = localStorage.getItem("nivelAcesso");
-
-  // SE FOR ACESSO DE MONTADOR, METE O BLOQUEIO GERAL DE NAVEGAÇÃO
-  if (nivelAcessoAtual === "montador") {
-    // 1. Esconde a sidebar (Menu Lateral) completamente
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar) sidebar.style.setProperty("display", "none", "important");
-
-    // 2. Oculta os botões de abas e filtros de data (Evita que o montador mexa na busca)
-    const secaoFiltrosTop = document.querySelector(".topbar div");
-    if (secaoFiltrosTop) secaoFiltrosTop.style.display = "none";
-
-    const secaoAbas = document.querySelector(".abas-agenda");
-    if (secaoAbas) secaoAbas.style.display = "none";
-
-    // 3. Estica o conteúdo dos cards para ocupar a tela inteira do celular de forma limpa
-    const content = document.querySelector(".content");
-    if (content) {
-      content.style.marginLeft = "0";
-      content.style.width = "100%";
-      content.style.padding = "15px";
-    }
-  }
-});
-
+// O array de agendamentos começa vazio e buscará os dados reais do Supabase
 let agenda = [];
-let abaAtual = "pendentes";
+let abaAtual = "pendentes"; // Controla qual aba está ativa por padrão
 
 async function carregarAgendaDoBanco() {
   try {
@@ -57,27 +10,12 @@ async function carregarAgendaDoBanco() {
 
     const dadosBrutos = await resposta.json();
     const agendamentosAgrupados = {};
-    const nomeFiltroNorm = equipeFiltrada
-      ? equipeFiltrada.replace(/_/g, " ").trim().toLowerCase()
-      : null;
 
     dadosBrutos.forEach((item) => {
       if (!item.solicitacoes || !item.montadores) return;
 
       const solicitacao = item.solicitacoes;
       const montador = item.montadores;
-
-      // Proteção contra valores nulos nas propriedades do banco de dados
-      const txtSolicitante = (solicitacao.solicitante || "").toLowerCase();
-      const txtMontador = (montador.nome || "").toLowerCase();
-
-      // FILTRAGEM ULTRA BLINDADA: Se for o link "geral", não barra nada e exibe tudo!
-      if (nomeFiltroNorm && nomeFiltroNorm !== "geral") {
-        const pertenceAEquipe =
-          txtSolicitante.includes(nomeFiltroNorm) ||
-          txtMontador.includes(nomeFiltroNorm);
-        if (!pertenceAEquipe) return; // Pula essa linha se for de outro montador
-      }
 
       if (!agendamentosAgrupados[solicitacao.id]) {
         agendamentosAgrupados[solicitacao.id] = {
@@ -88,16 +26,19 @@ async function carregarAgendaDoBanco() {
           numero_pedido: solicitacao.id,
           solicitante: solicitacao.solicitante || "Não informado",
           tipo_montagem: solicitacao.tipo_montagem || "Cliente",
-          observacao: solicitacao.observacao || "Sem observações.",
+          observacao:
+            solicitacao.observacao ||
+            solicitacao.observacoes ||
+            "Sem observações.",
           montadores: [],
         };
       }
-      agendamentosAgrupados[solicitacao.id].montadores.push(
-        montador.nome || "Montador",
-      );
+      agendamentosAgrupados[solicitacao.id].montadores.push(montador.nome);
     });
 
     agenda = Object.values(agendamentosAgrupados);
+
+    // Renderiza os dois painéis separadamente
     renderizarCardsAgenda();
   } catch (erro) {
     console.error("Erro na agenda:", erro);
@@ -139,14 +80,13 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
 
   const listaTrabalhada = dadosFiltrados || agenda;
 
-  // ORDENAÇÃO AUTOMÁTICA DA DATA: Organiza da data mais próxima para a mais distante
+  // ORDENAÇÃO AUTOMÁTICA DA DATA
   listaTrabalhada.sort((a, b) => {
     if (!a.data) return 1;
     if (!b.data) return -1;
-    return a.data.localeCompare(b.data); // Compara strings no formato YYYY-MM-DD
+    return a.data.localeCompare(b.data);
   });
 
-  // Remove acentos e espaços para comparar de forma segura (concluída vs concluida)
   const agendadas = listaTrabalhada.filter((item) => {
     const statusLimpo = (item.status || "")
       .toLowerCase()
@@ -165,7 +105,6 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
     return statusLimpo === "conclui-da" || statusLimpo === "concluida";
   });
 
-  // 1. RENDERIZA PENDENTES/AGENDADAS
   if (agendadas.length === 0) {
     areaPendentes.innerHTML = `<p class="info" style="grid-column: 1/-1; text-align: center; color: #7f8c8d; margin-top: 20px;">Nenhum agendamento ativo pendente.</p>`;
   } else {
@@ -174,7 +113,6 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
     );
   }
 
-  // 2. RENDERIZA CONCLUÍDAS
   if (concluidas.length === 0) {
     areaConcluidas.innerHTML = `<p class="info" style="grid-column: 1/-1; text-align: center; color: #7f8c8d; margin-top: 20px;">Nenhum histórico de montagem concluída encontrado.</p>`;
   } else {
@@ -184,19 +122,16 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
   }
 }
 
-// NOVO DESIGN DO CARD COMPLETO (CORRIGIDO DEFINITIVO)
 function gerarHtmlCard(item) {
   let equipeHtml = "";
-  if (item.montadores && item.montadores.length > 0) {
-    item.montadores.forEach((nome) => {
-      equipeHtml += `<div class="montador" style="background:#f1f5f9; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; color:#334155; margin-bottom:4px; border:1px solid #e2e8f0;">👷 ${nome}</div>`;
-    });
-  }
+  item.montadores.forEach((nome) => {
+    equipeHtml += `<div class="montador" style="background:#f1f5f9; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; color:#334155; margin-bottom:4px; border:1px solid #e2e8f0;">👷 ${nome}</div>`;
+  });
 
   let dataFormatada = "---";
   if (item.data && item.data.includes("-")) {
     const partes = item.data.split("-");
-    dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`; // CORREÇÃO DA DATA FIXADA AQUI
+    dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
   } else if (item.data) {
     dataFormatada = item.data;
   }
@@ -208,7 +143,6 @@ function gerarHtmlCard(item) {
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
-  // Badge inteligente atualizada com suporte a cores para folgas/afastamentos e clientes
   let badgeTipoCard = "";
   if (item.tipo_montagem === "Mostruário") {
     badgeTipoCard = `<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold;">🛠️ Mostruário Loja</span>`;
@@ -227,28 +161,20 @@ function gerarHtmlCard(item) {
             ${statusBase}
           </span>
         </div>
-        
         <div class="cidade" style="font-size:13px; color:#64748b; margin-bottom:12px; font-weight:500;">📍 ${item.cidade}</div>
-        
-        <!-- Caixa Informativa Baseada na Ideia do Usuário -->
         <div style="background:#f8fafc; padding:12px; border-radius:8px; margin-bottom:12px; border-left:4px solid #007bff; font-size:13px;">
           <div style="margin-bottom:6px; color:#1e293b;">📋 <strong>Tipo:</strong> ${badgeTipoCard}</div>
           <div style="color:#475569;">👤 <strong>A pedido de:</strong> ${item.solicitante || "Não informado"}</div>
         </div>
-
         <div style="font-size:13px; margin-bottom:15px; color:#334155; line-height:1.4;">
           💬 <strong>Observação:</strong> <span style="font-style:italic; color:#64748b;">"${item.observacao || "Sem observações."}"</span>
         </div>
-        
         <div class="data-info" style="font-size:13px; margin-bottom:15px; color:#1e293b;">
           📅 <strong>Data da Escala:</strong> <span style="font-weight:700; color:#007bff;">${dataFormatada}</span>
         </div>
-        
         <div class="equipe" style="border-top:1px dashed #e2e8f0; padding-top:12px;">
           <strong style="font-size:13px; color:#475569; display:block; margin-bottom:8px;">Equipe Escalada</strong>
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            ${equipeHtml}
-          </div>
+          <div style="display:flex; flex-direction:column; gap:2px;">${equipeHtml}</div>
         </div>
       </div>
     </div>
@@ -265,5 +191,4 @@ window.filtrarAgenda = function () {
   renderizarCardsAgenda(resultado);
 };
 
-// Inicializa a tela buscando os agendamentos reais do Supabase
 carregarAgendaDoBanco();
