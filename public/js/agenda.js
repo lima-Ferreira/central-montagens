@@ -67,8 +67,8 @@ async function carregarAgendaDoBanco() {
       const solicitacao = item.solicitacoes;
       const montador = item.montadores;
 
-      // FILTRAGEM INTELIGENTE DIRETA NO LAÇO: Se for montador, ignora as rotas dos outros colegas
-      if (nomeFiltroNorm) {
+      // FILTRAGEM INTELIGENTE CORRIGIDA: Se for o link "geral", não barra nada e exibe a escala de todos!
+      if (nomeFiltroNorm && nomeFiltroNorm !== "geral") {
         const pertenceAEquipe =
           (solicitacao.solicitante &&
             solicitacao.solicitante.toLowerCase().includes(nomeFiltroNorm)) ||
@@ -100,6 +100,7 @@ async function carregarAgendaDoBanco() {
     alert("Não foi possível carregar os agendamentos reais.");
   }
 }
+
 // Função para alternar a exibição entre Pendentes e Concluídas
 window.alternarAbas = function (aba) {
   abaAtual = aba;
