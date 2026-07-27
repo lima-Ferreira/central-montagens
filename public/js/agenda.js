@@ -67,13 +67,15 @@ async function carregarAgendaDoBanco() {
       const solicitacao = item.solicitacoes;
       const montador = item.montadores;
 
-      // FILTRAGEM INTELIGENTE CORRIGIDA: Se for o link "geral", não barra nada e exibe a escala de todos!
+      // Proteção contra valores nulos nas propriedades do banco de dados
+      const txtSolicitante = (solicitacao.solicitante || "").toLowerCase();
+      const txtMontador = (montador.nome || "").toLowerCase();
+
+      // FILTRAGEM ULTRA BLINDADA: Se for o link "geral", não barra nada e exibe tudo!
       if (nomeFiltroNorm && nomeFiltroNorm !== "geral") {
         const pertenceAEquipe =
-          (solicitacao.solicitante &&
-            solicitacao.solicitante.toLowerCase().includes(nomeFiltroNorm)) ||
-          (montador.nome &&
-            montador.nome.toLowerCase().includes(nomeFiltroNorm));
+          txtSolicitante.includes(nomeFiltroNorm) ||
+          txtMontador.includes(nomeFiltroNorm);
         if (!pertenceAEquipe) return; // Pula essa linha se for de outro montador
       }
 
@@ -90,7 +92,9 @@ async function carregarAgendaDoBanco() {
           montadores: [],
         };
       }
-      agendamentosAgrupados[solicitacao.id].montadores.push(montador.nome);
+      agendamentosAgrupados[solicitacao.id].montadores.push(
+        montador.nome || "Montador",
+      );
     });
 
     agenda = Object.values(agendamentosAgrupados);
@@ -100,7 +104,6 @@ async function carregarAgendaDoBanco() {
     alert("Não foi possível carregar os agendamentos reais.");
   }
 }
-
 // Função para alternar a exibição entre Pendentes e Concluídas
 window.alternarAbas = function (aba) {
   abaAtual = aba;
@@ -181,17 +184,19 @@ function renderizarCardsAgenda(dadosFiltrados = null) {
   }
 }
 
-// NOVO DESIGN DO CARD COMPLETO
+// NOVO DESIGN DO CARD COMPLETO (CORRIGIDO DEFINITIVO)
 function gerarHtmlCard(item) {
   let equipeHtml = "";
-  item.montadores.forEach((nome) => {
-    equipeHtml += `<div class="montador" style="background:#f1f5f9; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; color:#334155; margin-bottom:4px; border:1px solid #e2e8f0;">👷 ${nome}</div>`;
-  });
+  if (item.montadores && item.montadores.length > 0) {
+    item.montadores.forEach((nome) => {
+      equipeHtml += `<div class="montador" style="background:#f1f5f9; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:500; color:#334155; margin-bottom:4px; border:1px solid #e2e8f0;">👷 ${nome}</div>`;
+    });
+  }
 
   let dataFormatada = "---";
   if (item.data && item.data.includes("-")) {
     const partes = item.data.split("-");
-    dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+    dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`; // CORREÇÃO DA DATA FIXADA AQUI
   } else if (item.data) {
     dataFormatada = item.data;
   }
